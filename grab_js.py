@@ -46,7 +46,7 @@ headers = {'User-Agent': random.choice(user_agent_list)}
 if len(sys.argv) > 1:
     url = sys.argv[1]
 else:
-    sys.exit("Usage: python js_check.py <URL>")
+    sys.exit("Usage: python grab_js.py <URL>")
 
 # create extracted_js file
 ext_js = 'extracted_js.txt'
