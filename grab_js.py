@@ -48,13 +48,9 @@ if len(sys.argv) > 1:
 else:
     sys.exit("Usage: python grab_js.py <URL>")
 
-# create extracted_js file
-ext_js = 'extracted_js.txt'
-f = open(ext_js, 'w')
-f.close()
-
-
 try:
+    examine = 'examine_js.txt'
+    extracted = 'extracted_js.txt'
     r = requests.get(url, headers=headers, timeout=3).text
     soup = BeautifulSoup(r, 'lxml')
     js_code = soup.find_all("script")
@@ -63,14 +59,18 @@ try:
 
     rgx = r'(eval|window\.open|window\.parent|window\.frameElement|window\.document($|.+))'
     for code in code_blocks:
-        with open(ext_js, 'a') as f:
-            if re.findall(rgx, code):
-                print(f"{beautify(code)}\n")
-            else:
+        if re.findall(rgx, code):
+            with open(examine, 'a') as f:
+                f.write(f"{beautify(code)}\n")
+        else:
+            with open(extracted, 'a') as f:
                 f.write(f"{beautify(code)}\n")
 
-    if os.path.getsize(ext_js) != 0:
-        print("See 'extracted_js.txt' file")
+    if os.path.getsize(examine) != 0:
+        print(f"[+] See '{examine}' file")
+        
+    if os.path.getsize(extracted) != 0:
+        print(f"[+] See '{extracted}' file")
 
 except requests.exceptions.MissingSchema as e:
     sys.exit(e)
