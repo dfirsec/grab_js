@@ -1,19 +1,19 @@
-__author__ = "DFIRSec (@pulsecode)"
-__version__ = "0.1"
-__description__ = "Grab JavaScript Code Blocks"
-
 import os
 import random
 import re
 import sys
-from pprint import pprint
+from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
 from jsbeautifier import beautify
 from requests.exceptions import ConnectionError
 
-user_agent_list = [
+__author__ = "DFIRSec (@pulsecode)"
+__version__ = "0.0.1"
+__description__ = "Grab JavaScript Code Blocks"
+
+ua_list = [
     # Chrome
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36',
     'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36',
@@ -41,7 +41,7 @@ user_agent_list = [
     'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)'
 ]
 
-headers = {'User-Agent': random.choice(user_agent_list)}
+headers = {'User-Agent': random.choice(ua_list)}
 
 if len(sys.argv) > 1:
     url = sys.argv[1]
@@ -49,10 +49,11 @@ else:
     sys.exit("Usage: python grab_js.py <URL>")
 
 try:
-    examine = 'examine_js.txt'
-    extracted = 'extracted_js.txt'
-    r = requests.get(url, headers=headers, timeout=3).text
-    soup = BeautifulSoup(r, 'lxml')
+    base_dir = Path(__file__).parent
+    examine = Path.joinpath(base_dir, 'examine_js.txt')
+    extracted = Path.joinpath(base_dir, 'extracted_js.txt')
+    resp = requests.get(url, headers=headers, timeout=3).text
+    soup = BeautifulSoup(resp, 'lxml')
     js_code = soup.find_all("script")
 
     code_blocks = [str(x) for x in js_code]
@@ -67,10 +68,10 @@ try:
                 f.write(f"{beautify(code)}\n")
 
     if os.path.getsize(examine) != 0:
-        print(f"[+] See '{examine}' file")
-        
+        print(f"[+] JS to scrutinize: {examine}")
+
     if os.path.getsize(extracted) != 0:
-        print(f"[+] See '{extracted}' file")
+        print(f"[+] All JS extracted: {extracted}")
 
 except requests.exceptions.MissingSchema as e:
     sys.exit(e)
