@@ -10,7 +10,7 @@ from jsbeautifier import beautify
 from requests.exceptions import ConnectionError
 
 __author__ = "DFIRSec (@pulsecode)"
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __description__ = "Grab JavaScript Code Blocks"
 
 ua_list = [
@@ -49,9 +49,9 @@ else:
     sys.exit("Usage: python grab_js.py <URL>")
 
 try:
-    base_dir = Path(__file__).parent
-    examine = Path.joinpath(base_dir, 'examine_js.txt')
-    extracted = Path.joinpath(base_dir, 'extracted_js.txt')
+    parent = Path(__file__).parent
+    examine = Path.joinpath(parent, 'examine_js.txt')
+    extracted = Path.joinpath(parent, 'extracted_js.txt')
     resp = requests.get(url, headers=headers, timeout=3).text
     soup = BeautifulSoup(resp, 'lxml')
     js_code = soup.find_all("script")
@@ -61,16 +61,16 @@ try:
     rgx = r'(eval|window\.open|window\.parent|window\.frameElement|window\.document($|.+))'
     for code in code_blocks:
         if re.findall(rgx, code):
-            with open(examine, 'a') as f:
+            with open(examine, 'a', errors='ignore') as f:
                 f.write(f"{beautify(code)}\n")
         else:
-            with open(extracted, 'a') as f:
+            with open(extracted, 'a', errors='ignore') as f:
                 f.write(f"{beautify(code)}\n")
 
-    if os.path.getsize(examine) != 0:
+    if examine.exists() and os.path.getsize(examine) != 0:
         print(f"[+] JS to scrutinize: {examine}")
 
-    if os.path.getsize(extracted) != 0:
+    if extracted.exists() and os.path.getsize(extracted) != 0:
         print(f"[+] All JS extracted: {extracted}")
 
 except requests.exceptions.MissingSchema as e:
