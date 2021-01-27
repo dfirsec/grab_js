@@ -1,4 +1,4 @@
-bs4==0.0.1
-jsbeautifier==1.13.0
-lxml==4.5.2
-requests==2.24.0
+bs4>=0.0.1
+jsbeautifier>=1.13.0
+lxml>=4.5.2
+requests>=2.24.0
