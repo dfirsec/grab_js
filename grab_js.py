@@ -6,7 +6,7 @@ from pathlib import Path
 
 import requests
 from bs4 import BeautifulSoup
-from jsbeautifier import beautify
+import jsbeautifier
 from requests.exceptions import ConnectionError
 
 __author__ = "DFIRSec (@pulsecode)"
@@ -55,24 +55,23 @@ try:
     resp = requests.get(url, headers=headers, timeout=3).text
     soup = BeautifulSoup(resp, "lxml")
     js_code = soup.find_all("script")
-
     code_blocks = [str(x) for x in js_code]
 
-    # # erase file contents
-    # if examine.exists() or extracted.exists():
-    #     open(examine, 'w').close()
-    #     open(extracted, 'w').close()
+    regex = r"(eval|document\.write|unescape|setcookie|getcookie|chr(W|w)?\(\S+\)|strreverse\(\S+\)|document\.createElement|window\.open|window\.parent|window\.frameElement|window\.document($|.+)|window\.onload)"
 
-    rgx = r"(eval|window\.open|window\.parent|window\.frameElement|window\.document($|.+))"
+     # erase file contents
+    if examine.exists() or extracted.exists():
+        open(examine, 'w').close()
+        open(extracted, 'w').close()
+        
     for code in code_blocks:
-        if re.findall(rgx, code):
+        res = jsbeautifier.beautify(code)
+        if re.findall(regex, code, re.IGNORECASE):
             with open(examine, "a", errors="ignore") as f:
-                f.truncate() #clear file contents
-                f.write(f"{beautify(code)}\n")
+                f.write(f"{res}\n")
         else:
             with open(extracted, "a", errors="ignore") as f:
-                f.truncate() #clear file contents
-                f.write(f"{beautify(code)}\n")
+                f.write(f"{res}\n")
 
     if examine.exists() and os.path.getsize(examine) != 0:
         print(f"[+] JS to scrutinize: {examine}")
