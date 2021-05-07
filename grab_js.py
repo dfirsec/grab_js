@@ -108,6 +108,7 @@ try:
 
     if extracted.exists() and os.path.getsize(extracted) != 0:
         print(f"[~] All JS extracted: {colors.CYAN}{extracted.parts[-1]}{colors.RST}")
+    print(colors.SEP)
 
 except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as e:
     sys.exit(e)
