@@ -4,14 +4,28 @@ import re
 import sys
 from pathlib import Path
 
+import jsbeautifier
 import requests
 from bs4 import BeautifulSoup
-import jsbeautifier
 from requests.exceptions import ConnectionError
 
 __author__ = "DFIRSec (@pulsecode)"
 __version__ = "0.0.3"
 __description__ = "Grab JavaScript Code Blocks"
+
+
+class colors:
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    WARNING = "\033[93m"
+    FAIL = "\033[91m"
+    BOLD = "\033[1m"
+    GRAY = "\033[90m"
+    UNDERLINE = "\033[4m"
+    RST = "\033[0m"
+    SEP = f"{GRAY}{('.' * 50)}{RST}"
+
 
 ua_list = [
     # Chrome
@@ -57,29 +71,40 @@ try:
     js_code = soup.find_all("script")
     code_blocks = [str(x) for x in js_code]
 
-    regex = r"(eval|document\.write|unescape|setcookie|getcookie|chr(W|w)?\(\S+\)|strreverse\(\S+\)|document\.createElement|window\.open|window\.parent|window\.frameElement|window\.document($|.+)|window\.onload)"
+    regex = r"(?!document\.createElement\((\"|')(script|iframe|link)(\"|')\))(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)|strreverse\(\S+\)|charcode|tostring|document\.createElement\(\S+\)|window\.open\(\S+\)|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|\\x[0-9a-fA-F]{2}\b)"
 
-     # erase file contents
+    # erase file contents
     if examine.exists() or extracted.exists():
-        open(examine, 'w').close()
-        open(extracted, 'w').close()
-        
+        open(examine, "w").close()
+        open(extracted, "w").close()
+
+    # jsbeautifier options -- https://github.com/beautify-web/js-beautify
+    opts = jsbeautifier.default_options()
+    opts.jslint_happy = True
+    opts.max_preserve_newlines = -1
+
     for code in code_blocks:
-        res = jsbeautifier.beautify(code)
+        res = jsbeautifier.beautify(code, opts)
+
+        matches = re.finditer(regex, code, re.IGNORECASE)
+        for match in matches:
+            print(f"[+] {colors.WARNING}{match.group()}{colors.RST}")
+
         if re.findall(regex, code, re.IGNORECASE):
-            with open(examine, "a", errors="ignore") as f:
-                f.write(f"{res}\n")
-        else:
-            with open(extracted, "a", errors="ignore") as f:
+            with open(examine, "a", errors="ignore", newline="") as f:
                 f.write(f"{res}\n")
 
+        with open(extracted, "a", errors="ignore", newline="") as f:
+            f.write(f"{res}\n")
+
+    print(colors.SEP)
     if examine.exists() and os.path.getsize(examine) != 0:
-        print(f"[+] JS to scrutinize: {examine}")
+        print(f"[*] JS to scrutinize: {examine}")
 
     if extracted.exists() and os.path.getsize(extracted) != 0:
-        print(f"[+] All JS extracted: {extracted}")
+        print(f"[~] All JS extracted: {extracted}")
 
-except requests.exceptions.MissingSchema as e:
+except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as e:
     sys.exit(e)
 except ConnectionError as e:
-    sys.exit(f"[ERROR] Please check the URL: {url}")
+    sys.exit(f"{colors.FAIL}[ERROR]{colors.RST} Please check the URL: {url}")
