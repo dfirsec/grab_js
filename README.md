@@ -15,5 +15,5 @@ pip install -r requirements.txt
 ## Usage
 
 ```text
-\$ python grab_js.py <URL>
+$ python grab_js.py <URL>
 ```
