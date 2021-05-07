@@ -16,4 +16,11 @@ pip install -r requirements.txt
 
 ```text
 $ python grab_js.py <URL>
+..................................................
+[*] Scrutinize this JS: examine_js.txt
+    > Line 3: document.write('<script type="application/javascript" src="/pf/dist/engine/polyfill.js?d=295" defer=""><\/script>') (chars 0-115)
+    > Line 15: document.createElement("iframe") (chars 17-49)
+    > Line 20: Window.document (chars 13-28)
+    > Line 22: Window.document (chars 108-123)
+[~] All JS extracted: extracted_js.txt
 ```
