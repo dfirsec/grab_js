@@ -71,7 +71,7 @@ try:
     js_code = soup.find_all("script")
     code_blocks = [str(x) for x in js_code]
 
-    regex = r"(?!document\.createElement\((\"|')(script|style|img|link|meta)(\"|')\))(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)|strreverse\(\S+\)|charcode|tostring|document\.createElement\(\S+\)|window\.open\(\S+\)|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|(?!\x00)\\x[0-9a-fA-F]{2}\b|(?!\\u0000|\\u2029|\\u2026|\\u003c|\\u003e)\\u[0-9a-fA-F]{4})"
+    regex = r"(?!document\.createElement\((\"|')(script|style|img|link|meta)(\"|')\))(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)|strreverse\(\S+\)|charcode|tostring\((\S+|)\)|document\.createElement\(\S+\)|window\.open\(\S+\)|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|(?!\\x00)\\x[0-9a-fA-F]{2}\b|(?!\\u0000|\\u0026|\\u2029|\\u2026|\\u2028|\\u003c|\\u003e)\\u[0-9a-fA-F]{4})"
 
     # erase file contents
     if examine.exists() or extracted.exists():
@@ -96,15 +96,14 @@ try:
     print(colors.SEP)
     if examine.exists() and os.path.getsize(examine) != 0:
         print(f"[*] Scrutinize this JS: {colors.CYAN}{examine.parts[-1]}{colors.RST}")
+        with open(examine) as f:
+            lines = [line.strip() for line in f.readlines()]
+            for n, line in enumerate(lines, start=1):
+                matches = re.finditer(regex, line, re.IGNORECASE)
+                for m in matches:
+                    print(f"    > Line {n}: {colors.WARNING}{m.group()}{colors.RST} (chars {m.start()}-{m.end()})")
     else:
         print(f"[-] Hmm, nothing to scrutinize")
-
-    with open(examine) as f:
-        lines = [line.strip() for line in f.readlines()]
-        for n, line in enumerate(lines, start=1):
-            matches = re.finditer(regex, line, re.IGNORECASE)
-            for m in matches:
-                print(f"    > Line {n}: {colors.WARNING}{m.group()}{colors.RST} (chars {m.start()}-{m.end()})")
 
     if extracted.exists() and os.path.getsize(extracted) != 0:
         print(f"[~] All JS extracted: {colors.CYAN}{extracted.parts[-1]}{colors.RST}")
