@@ -71,7 +71,7 @@ try:
     js_code = soup.find_all("script")
     code_blocks = [str(x) for x in js_code]
 
-    regex = r"(?!document\.createElement\((\"|')(script|style|iframe|link)(\"|')\))(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)|strreverse\(\S+\)|charcode|tostring|document\.createElement\(\S+\)|window\.open\(\S+\)|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|\\x[0-9a-fA-F]{2}\b)"
+    regex = r"(?!document\.createElement\((\"|')(script|style|iframe|img|link)(\"|')\))(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)|strreverse\(\S+\)|charcode|tostring|document\.createElement\(\S+\)|window\.open\(\S+\)|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|\\x[0-9a-fA-F]{2}\b)"
 
     # erase file contents
     if examine.exists() or extracted.exists():
@@ -100,6 +100,8 @@ try:
     print(colors.SEP)
     if examine.exists() and os.path.getsize(examine) != 0:
         print(f"[*] JS to scrutinize: {colors.CYAN}{examine.parts[-1]}{colors.RST}")
+    else:
+        print(f"[-] Hmm, nothing to scrutinize")
 
     if extracted.exists() and os.path.getsize(extracted) != 0:
         print(f"[~] All JS extracted: {colors.CYAN}{extracted.parts[-1]}{colors.RST}")
