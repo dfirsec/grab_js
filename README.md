@@ -1,7 +1,8 @@
 # Grab JS
+
 ![Generic badge](https://img.shields.io/badge/python-3.7-blue.svg) [![Twitter](https://img.shields.io/badge/Twitter-@pulsecode-blue.svg)](https://twitter.com/pulsecode)
 
-Python script to retrieve JavaScript Code Blocks
+Python script to retrieve and analyze JavaScript code blocks
 
 ## Installation
 
@@ -12,6 +13,7 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-```
-$ python grab_js.py <URL>
+
+```text
+\$ python grab_js.py <URL>
 ```
