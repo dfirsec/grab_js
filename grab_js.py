@@ -14,7 +14,8 @@ __version__ = "0.0.3"
 __description__ = "Grab JavaScript Code Blocks"
 
 
-class colors:
+class TermColors:
+    """Returns terminal color options."""
     BLUE = "\033[94m"
     CYAN = "\033[96m"
     GREEN = "\033[92m"
@@ -26,6 +27,7 @@ class colors:
     RST = "\033[0m"
     SEP = f"{GRAY}{('.' * 50)}{RST}"
 
+tc = TermColors()
 
 ua_list = [
     # Chrome
@@ -93,23 +95,23 @@ try:
         with open(extracted, "a", errors="ignore", newline="") as f:
             f.write(f"{res}\n")
 
-    print(colors.SEP)
+    print(tc.SEP)
     if examine.exists() and os.path.getsize(examine) != 0:
-        print(f"[*] Scrutinize this JS: {colors.CYAN}{examine.parts[-1]}{colors.RST}")
+        print(f"[*] Scrutinize this JS: {tc.CYAN}{examine.parts[-1]}{tc.RST}")
         with open(examine) as f:
             lines = [line.strip() for line in f.readlines()]
             for n, line in enumerate(lines, start=1):
                 matches = re.finditer(regex, line, re.IGNORECASE)
                 for m in matches:
-                    print(f"    > Line {n}: {colors.WARNING}{m.group()}{colors.RST} (chars {m.start()}-{m.end()})")
+                    print(f"    > Line {n}: {tc.WARNING}{m.group()}{tc.RST} (chars {m.start()}-{m.end()})")
     else:
-        print(f"[-] Hmm, nothing to scrutinize")
+        print("[-] Hmm, nothing to scrutinize")
 
     if extracted.exists() and os.path.getsize(extracted) != 0:
-        print(f"[~] All JS extracted: {colors.CYAN}{extracted.parts[-1]}{colors.RST}")
-    print(colors.SEP)
+        print(f"[~] All JS extracted: {tc.CYAN}{extracted.parts[-1]}{tc.RST}")
+    print(tc.SEP)
 
 except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as e:
     sys.exit(e)
 except ConnectionError as e:
-    sys.exit(f"{colors.FAIL}[ERROR]{colors.RST} Please check the URL: {url}")
+    sys.exit(f"{tc.FAIL}[ERROR]{tc.RST} Please check the URL: {url}")
