@@ -73,12 +73,12 @@ try:
     js_code = soup.find_all("script")
     code_blocks = [str(x) for x in js_code]
 
-    regex = r"(?!document\.createElement\((\"|')(script|style|img|link|meta)(\"|')\))(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)|strreverse\(\S+\)|charcode|tostring\((\S+|)\)|document\.createElement\(\S+\)|window\.open\(\S+\)|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|(?!\\x00)\\x[0-9a-fA-F]{2}\b|(?!\\u0000|\\u0026|\\u2029|\\u2026|\\u2028|\\u003c|\\u003e)\\u[0-9a-fA-F]{4})"
+    REGEX = r"(?!document\.createElement\((\"|')(script|style|img|link|meta)(\"|')\))(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)|strreverse\(\S+\)|charcode|tostring\((\S+|)\)|document\.createElement\(\S+\)|window\.open\(\S+\)|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|(?!\\x00)\\x[0-9a-fA-F]{2}\b|(?!\\u0000|\\u0026|\\u2029|\\u2026|\\u2028|\\u003c|\\u003e)\\u[0-9a-fA-F]{4})"
 
     # erase file contents
     if examine.exists() or extracted.exists():
-        open(examine, "w").close()
-        open(extracted, "w").close()
+        open(examine, "w", encoding="utf-8").close()
+        open(extracted, "w", encoding="utf-8").close()
 
     # jsbeautifier options -- https://github.com/beautify-web/js-beautify
     opts = jsbeautifier.default_options()
@@ -88,20 +88,20 @@ try:
     for code in code_blocks:
         res = jsbeautifier.beautify(code, opts)
 
-        if re.findall(regex, code, re.IGNORECASE):
-            with open(examine, "a", errors="ignore", newline="") as f:
+        if re.findall(REGEX, code, re.IGNORECASE):
+            with open(examine, "a", errors="ignore", newline="", encoding="utf-8") as f:
                 f.write(f"{res}\n")
 
-        with open(extracted, "a", errors="ignore", newline="") as f:
+        with open(extracted, "a", errors="ignore", newline="", encoding="utf-8") as f:
             f.write(f"{res}\n")
 
     print(tc.SEP)
     if examine.exists() and os.path.getsize(examine) != 0:
         print(f"[*] Scrutinize this JS: {tc.CYAN}{examine.parts[-1]}{tc.RST}")
-        with open(examine) as f:
+        with open(examine, encoding="utf-8") as f:
             lines = [line.strip() for line in f.readlines()]
             for n, line in enumerate(lines, start=1):
-                matches = re.finditer(regex, line, re.IGNORECASE)
+                matches = re.finditer(REGEX, line, re.IGNORECASE)
                 for m in matches:
                     print(f"    > Line {n}: {tc.WARNING}{m.group()}{tc.RST} (chars {m.start()}-{m.end()})")
     else:

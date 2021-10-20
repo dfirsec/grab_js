@@ -1,4 +1,4 @@
 bs4
-jsbeautifier>=1.13.13
-lxml>=4.6.3
+jsbeautifier
+lxml
 requests
