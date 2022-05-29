@@ -7,7 +7,6 @@ from pathlib import Path
 import jsbeautifier
 import requests
 from bs4 import BeautifulSoup
-from requests.exceptions import ConnectionError
 
 __author__ = "DFIRSec (@pulsecode)"
 __version__ = "0.0.3"
@@ -16,6 +15,7 @@ __description__ = "Grab JavaScript Code Blocks"
 
 class TermColors:
     """Returns terminal color options."""
+
     BLUE = "\033[94m"
     CYAN = "\033[96m"
     GREEN = "\033[92m"
@@ -26,6 +26,7 @@ class TermColors:
     UNDERLINE = "\033[4m"
     RST = "\033[0m"
     SEP = f"{GRAY}{('.' * 50)}{RST}"
+
 
 tc = TermColors()
 
