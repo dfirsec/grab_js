@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "grab-js"
+version = "0.0.3"
+description = "Grab JavaScript Code Blocks"
+authors = ["Mitch Haddadi <12067255+dfirsec@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "grab_js"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+jsbeautifier = "^1.14.7"
+lxml = "^4.9.2"
+requests = "^2.28.2"
+bs4 = "^0.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

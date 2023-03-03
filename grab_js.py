@@ -1,3 +1,4 @@
+"""Grab JavaScript Code Blocks"""
 import os
 import random
 import re
@@ -10,7 +11,7 @@ from bs4 import BeautifulSoup
 
 __author__ = "DFIRSec (@pulsecode)"
 __version__ = "0.0.3"
-__description__ = "Grab JavaScript Code Blocks"
+__license__ = "MIT"
 
 
 class TermColors:
@@ -28,9 +29,9 @@ class TermColors:
     SEP = f"{GRAY}{('.' * 50)}{RST}"
 
 
-tc = TermColors()
+TC = TermColors()
 
-ua_list = [
+UA = [
     # Chrome
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36",
     "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36",
@@ -58,61 +59,96 @@ ua_list = [
     "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 5.1; Trident/4.0; .NET CLR 2.0.50727; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729)",
 ]
 
-headers = {"User-Agent": random.choice(ua_list)}
+HEADERS = {"User-Agent": random.choice(UA)}
 
 if len(sys.argv) > 1:
-    url = sys.argv[1]
+    URL = sys.argv[1]
 else:
     sys.exit("Usage: python grab_js.py <URL>")
 
 try:
-    parent = Path(__file__).parent
-    examine = Path.joinpath(parent, "examine_js.txt")
-    extracted = Path.joinpath(parent, "extracted_js.txt")
-    resp = requests.get(url, headers=headers, timeout=3).text
-    soup = BeautifulSoup(resp, "lxml")
-    js_code = soup.find_all("script")
-    code_blocks = [str(x) for x in js_code]
+    PARENT = Path(__file__).parent
+    EXAMINE = Path.joinpath(PARENT, "examine_js.txt")
+    EXTRACTED = Path.joinpath(PARENT, "extracted_js.txt")
 
-    REGEX = r"(?!document\.createElement\((\"|')(script|style|img|link|meta)(\"|')\))(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)|strreverse\(\S+\)|charcode|tostring\((\S+|)\)|document\.createElement\(\S+\)|window\.open\(\S+\)|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|(?!\\x00)\\x[0-9a-fA-F]{2}\b|(?!\\u0000|\\u0026|\\u2029|\\u2026|\\u2028|\\u003c|\\u003e)\\u[0-9a-fA-F]{4})"
+    RESP = requests.get(URL, headers=HEADERS, timeout=3).text
+    SOUP = BeautifulSoup(RESP, "lxml")
+    JSCODE = SOUP.find_all("script")
+    CODEBLOCKS = [str(x) for x in JSCODE]
+
+    REGEX_PATTERN = (
+        r"(?!document\.createElement\((\"|')(script|style|img|link|meta)(\"|')\))"
+        r"(eval\(\S+\)|document\.write\(.+\)|unescape\(.+\)|setcookie\(.+\)|getcookie\(\S+\)|chrw?\(\S+\)"
+        r"|strreverse\(\S+\)|charcode|tostring\((\S+|)\)|document\.createElement\(\S+\)|window\.open\(\S+\)"
+        r"|window\.parent|window\.frameElement|window\.document($|\S+)|window\.onload|"
+        r"(?=iframe).+(visibility=\"false\")|(?=iframe).+(width=\"0\" height=\"0\" frameborder=\"0\")|"
+        r"<iframe src=.+<\/iframe>|var\s[a-z0-9_]{25,}\s?=|(?!\\x00)\\x[0-9a-fA-F]{2}\b|(?!\\u0000|\\u0026|"
+        r"\\u2029|\\u2026|\\u2028|\\u003c|\\u003e)\\u[0-9a-fA-F]{4})"
+    )
+
+    #    (?!document\.createElement\((\"|')(script|style|img|link|meta)(\"|')\))        # negative lookahead for certain strings
+    #    eval\(\S+\)                                                                    # matches eval() function
+    #    document\.write\(.+\)                                                          # matches document.write() function
+    #    unescape\(.+\)                                                                 # matches unescape() function
+    #    setcookie\(.+\)                                                                # matches setcookie() function
+    #    getcookie\(\S+\)                                                               # matches getcookie() function
+    #    chrw?\(\S+\)                                                                   # matches chr() or chrw() functions
+    #    strreverse\(\S+\)                                                              # matches strreverse() function
+    #    charcode                                                                       # matches charcode string
+    #    tostring\((\S+|)\)                                                             # matches tostring() function
+    #    document\.createElement\(\S+\)                                                 # matches document.createElement() function
+    #    window\.open\(\S+\)                                                            # matches window.open() function
+    #    window\.parent                                                                 # matches window.parent
+    #    window\.frameElement                                                           # matches window.frameElement
+    #    window\.document($|\S+)                                                        # matches window.document or window.document.foo
+    #    window\.onload                                                                 # matches window.onload
+    #    (?=.*<iframe)(?=.*visibility=\"false\")                                        # positive lookahead for iframe with visibility="false"
+    #    (?=.*<iframe)(?=.*width=\"0\" height=\"0\" frameborder=\"0\")                  # positive lookahead for iframe with certain attributes
+    #    <iframe src=.+?<\/iframe>                                                      # matches iframe tag with certain src
+    #    var\s+[a-zA-Z0-9_]{25,}\s*=\s*                                                 # matches var declaration with long variable name
+    #    (?!\\x00)\\x[0-9a-fA-F]{2}\b                                                   # matches hex encoding with a value other than \\x00
+    #    (?!\\u0000|\\u0026|\\u2029|\\u2026|\\u2028|\\u003c|\\u003e)\\u[0-9a-fA-F]{4}   # matches unicode encoding with disallowed characters
 
     # erase file contents
-    if examine.exists() or extracted.exists():
-        open(examine, "w", encoding="utf-8").close()
-        open(extracted, "w", encoding="utf-8").close()
+    if EXAMINE.exists() or EXTRACTED.exists():
+        with open(EXAMINE, "w", encoding="utf-8"):
+            pass
+        with open(EXTRACTED, "w", encoding="utf-8"):
+            pass
 
     # jsbeautifier options -- https://github.com/beautify-web/js-beautify
-    opts = jsbeautifier.default_options()
-    opts.jslint_happy = True
-    opts.max_preserve_newlines = -1
+    OPTS = jsbeautifier.default_options()
+    OPTS.jslint_happy = True
+    OPTS.max_preserve_newlines = -1
 
-    for code in code_blocks:
-        res = jsbeautifier.beautify(code, opts)
+    for code in CODEBLOCKS:
+        RESULTS = jsbeautifier.beautify(code, OPTS)
 
-        if re.findall(REGEX, code, re.IGNORECASE):
-            with open(examine, "a", errors="ignore", newline="", encoding="utf-8") as f:
-                f.write(f"{res}\n")
+        if re.findall(REGEX_PATTERN, code, re.IGNORECASE | re.VERBOSE):
+            with open(EXAMINE, "a", errors="ignore", newline="", encoding="utf-8") as f:
+                f.write(f"{RESULTS}\n")
 
-        with open(extracted, "a", errors="ignore", newline="", encoding="utf-8") as f:
-            f.write(f"{res}\n")
+        with open(EXTRACTED, "a", errors="ignore", newline="", encoding="utf-8") as f:
+            f.write(f"{RESULTS}\n")
 
-    print(tc.SEP)
-    if examine.exists() and os.path.getsize(examine) != 0:
-        print(f"[*] Scrutinize this JS: {tc.CYAN}{examine.parts[-1]}{tc.RST}")
-        with open(examine, encoding="utf-8") as f:
-            lines = [line.strip() for line in f.readlines()]
-            for n, line in enumerate(lines, start=1):
-                matches = re.finditer(REGEX, line, re.IGNORECASE)
-                for m in matches:
-                    print(f"    > Line {n}: {tc.WARNING}{m.group()}{tc.RST} (chars {m.start()}-{m.end()})")
+    print(TC.SEP)
+    if EXAMINE.exists() and os.path.getsize(EXAMINE) != 0:
+        print(f"[*] Scrutinize this JS: {TC.CYAN}{EXAMINE.parts[-1]}{TC.RST}")
+        with open(EXAMINE, encoding="utf-8") as f:
+            LINES = [line.strip() for line in f.readlines()]
+            for n, line in enumerate(LINES, start=1):
+                MATCHES = re.finditer(REGEX_PATTERN, line, re.IGNORECASE)
+                for match in MATCHES:
+                    print(f"    > Line {n}: {TC.WARNING}{match.group()}{TC.RST} (chars {match.start()}-{match.end()})")
     else:
         print("[-] Hmm, nothing to scrutinize")
 
-    if extracted.exists() and os.path.getsize(extracted) != 0:
-        print(f"[~] All JS extracted: {tc.CYAN}{extracted.parts[-1]}{tc.RST}")
-    print(tc.SEP)
+    if EXTRACTED.exists() and os.path.getsize(EXTRACTED) != 0:
+        print(f"[~] All JS extracted: {TC.CYAN}{EXTRACTED.parts[-1]}{TC.RST}")
+    print(TC.SEP)
 
-except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as e:
-    sys.exit(e)
-except ConnectionError as e:
-    sys.exit(f"{tc.FAIL}[ERROR]{tc.RST} Please check the URL: {url}")
+except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as err:
+    print(err)
+    sys.exit()
+except ConnectionError as err:
+    sys.exit(f"{TC.FAIL}[ERROR]{TC.RST} Please check the URL: {URL}")
