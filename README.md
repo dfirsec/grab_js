@@ -1,7 +1,5 @@
 # Grab JS
 
-![Generic badge](https://img.shields.io/badge/python-3.11-blue.svg) [![Twitter](https://img.shields.io/badge/Twitter-@pulsecode-blue.svg)](https://twitter.com/pulsecode)
-
 Python script to retrieve and analyze JavaScript code blocks from a given URL.
 
 ## Installation
