@@ -9,11 +9,19 @@ Python script to retrieve and analyze JavaScript code blocks from a given URL.
 ```text
 git clone https://github.com/dfirsec/grab_js.git
 cd grab_js
-pip install -r requirements.txt
+poetry install
 ```
 
 ## Usage
 
+1. Start the shell with the following:
+
+```text
+poetry shell
+```
+
+2. Run the following command:
+   
 ```text
 $ python grab_js.py <URL>
 ..................................................
