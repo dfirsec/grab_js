@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "grab-js"
-version = "0.0.3"
+version = "0.0.4"
 description = "Grab JavaScript Code Blocks"
 authors = ["Mitch Haddadi <12067255+dfirsec@users.noreply.github.com>"]
 license = "MIT"
