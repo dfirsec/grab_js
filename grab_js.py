@@ -186,9 +186,10 @@ def main() -> None:
         url_processor(url)
     except (requests.exceptions.MissingSchema, requests.exceptions.InvalidSchema) as err:
         print(err)
-        sys.exit()
+        sys.exit(1)
     except ConnectionError:
-        sys.exit(f"{TermColors.red}[ERROR]{TermColors.reset} Please check the URL: {url}")
+        print(f"{TermColors.red}[ERROR]{TermColors.reset} Connection error. Please check the URL: {url}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
