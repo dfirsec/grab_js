@@ -49,8 +49,8 @@ Python script to retrieve and analyze JavaScript code blocks from a given URL.
 
 The script generates two files:
 
-`examine_js.txt`: Contains JavaScript blocks flagged as potentially suspicious
-`extracted_js.txt`: Contains all extracted JavaScript blocks
+- `examine_js.txt`: Contains JavaScript blocks flagged as potentially suspicious
+- `extracted_js.txt`: Contains all extracted JavaScript blocks
 
 Console output provides a summary of suspicious patterns found, including line numbers and brief explanations.
 
