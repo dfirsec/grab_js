@@ -52,8 +52,6 @@ The script generates two files:
 - `examine_js.txt`: Contains JavaScript blocks flagged as potentially suspicious
 - `extracted_js.txt`: Contains all extracted JavaScript blocks
 
-Console output provides a summary of suspicious patterns found, including line numbers and brief explanations.
-
 ### Logging
 
 The script logs activities to `js_analysis.log` for debugging or auditing.
