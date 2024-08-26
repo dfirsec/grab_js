@@ -14,6 +14,7 @@ from typing import ClassVar
 import jsbeautifier
 import requests
 from bs4 import BeautifulSoup
+from rich.console import Console
 
 # Constants
 USER_AGENTS_FILE = Path("user_agents.txt")
@@ -23,20 +24,8 @@ EXTRACTED_JS_FILE = Path("extracted_js.txt")
 # Log connection sequence and any errors
 logging.basicConfig(filename="js_analysis.log", level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 
-
-class TermColors:
-    """ANSI terminal color codes."""
-
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    BOLD = "\033[1m"
-    GRAY = "\033[90m"
-    UNDERLINE = "\033[4m"
-    RESET = "\033[0m"
-    SEPARATOR = f"{GRAY}{('.' * 50)}{RESET}"
+# Rich Console for output
+console = Console(highlight=False)
 
 
 class UserAgent:
@@ -184,6 +173,10 @@ class JSExtractor:
             with requests.Session() as session:
                 return self._extracted_fetch(session, headers)
         except requests.RequestException as e:
+            console.print(
+                ":disappointed: [red bold]Failed to fetch the page [/red bold]\n"
+                f":backhand_index_pointing_right: {e}",
+            )
             logging.error(f"Failed to fetch the page: {e}")
             sys.exit(1)
 
@@ -296,9 +289,9 @@ class ResultPrinter:
 
         @wraps(func)
         def wrapper(*args, **kwargs) -> None:
-            print(TermColors.SEPARATOR)
+            console.print(f"[bright_black]{('.' * 50)}[/bright_black]")
             func(*args, **kwargs)
-            print(TermColors.SEPARATOR)
+            console.print(f"[bright_black]{('.' * 50)}[/bright_black]")
 
         return wrapper
 
@@ -312,9 +305,8 @@ class ResultPrinter:
     @staticmethod
     def _print_suspicious_js() -> None:
         """Print information about suspicious JS."""
-        tc = TermColors
         if EXAMINE_JS_FILE.exists() and EXAMINE_JS_FILE.stat().st_size != 0:
-            print(f"[*] Scrutinize this JS: {tc.CYAN}{EXAMINE_JS_FILE}{tc.RESET}")
+            console.print(f"[*] Scrutinize this JS: [cyan]{EXAMINE_JS_FILE}[/cyan]")
             content = EXAMINE_JS_FILE.read_text(encoding="utf-8")
             max_length = 40
             for n, line in enumerate(content.splitlines(), start=1):
@@ -329,8 +321,8 @@ class ResultPrinter:
                     explanation = RegexPatterns.get_pattern_explanation(matched_text)
                     if len(matched_text) > max_length:
                         matched_text = f"{matched_text[:max_length]}..."
-                    print(
-                        f"    > Line {n}: {tc.YELLOW}{matched_text}{tc.RESET} "
+                    console.print(
+                        f"    > Line {n}: [yellow]{matched_text}[/yellow] "
                         f"(chars {match.start()}-{match.end()}) - {explanation}",
                     )
                     logging.debug(f"Flagged line {n}: {matched_text[:max_length]}... - {explanation}")
@@ -340,9 +332,8 @@ class ResultPrinter:
     @staticmethod
     def _print_extracted_js() -> None:
         """Print information about all extracted JS."""
-        tc = TermColors
         if EXTRACTED_JS_FILE.exists() and EXTRACTED_JS_FILE.stat().st_size != 0:
-            print(f"[~] All JS extracted: {tc.CYAN}{EXTRACTED_JS_FILE}{tc.RESET}")
+            console.print(f"[~] All JS extracted: [cyan]{EXTRACTED_JS_FILE}[/cyan]")
 
 
 def main() -> None:
@@ -352,9 +343,11 @@ def main() -> None:
         sys.exit(1)
 
     url = sys.argv[1]
-    extractor = JSExtractor(url)
-    extractor.process()
-    ResultPrinter.print_results()
+
+    with console.status("Working..."):
+        extractor = JSExtractor(url)
+        extractor.process()
+        ResultPrinter.print_results()
 
 
 if __name__ == "__main__":
