@@ -9,10 +9,11 @@ packages = [{include = "grab_js"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+beautifulsoup4 = "^4.12.3"
 jsbeautifier = "^1.15.1"
 lxml = "^5.3.0"
 requests = "^2.32.3"
-beautifulsoup4 = "^4.12.3"
+rich = "^13.7.1"
 
 [build-system]
 requires = ["poetry-core"]

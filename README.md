@@ -8,6 +8,7 @@ Python script to retrieve and analyze JavaScript code blocks from a given URL.
 - BeautifulSoup4
 - jsbeautifier
 - requests
+- rich
 
 ## Installation
 
